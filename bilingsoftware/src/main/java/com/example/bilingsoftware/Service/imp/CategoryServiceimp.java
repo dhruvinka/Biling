@@ -5,8 +5,11 @@ import com.example.bilingsoftware.Repo.ItemRepo;
 import com.example.bilingsoftware.Service.CategoryService;
 import com.example.bilingsoftware.Service.FileUploadService;
 import com.example.bilingsoftware.entity.CategoryEntity;
+import com.example.bilingsoftware.entity.ItemEntity;
 import com.example.bilingsoftware.io.CategoryRequest;
 import com.example.bilingsoftware.io.CategoryResponse;
+import com.example.bilingsoftware.io.ItemRequest;
+import com.example.bilingsoftware.io.ItemResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,14 +31,15 @@ public class CategoryServiceimp implements CategoryService {
     private FileUploadService fileUploadService;
 
     @Override
-    public CategoryResponse add(CategoryRequest categoryRequest, MultipartFile file)
-    {
-      String imgurl=  fileUploadService.uploadFile(file);
-        CategoryEntity newCategory=converttoEntity(categoryRequest);
-        newCategory.setImgurl(imgurl);
-        newCategory= categoryRepo.save(newCategory);
-       return convertToResponse(newCategory);
+    public CategoryResponse add(CategoryRequest categoryRequest, MultipartFile file) {
+        String fileName = fileUploadService.uploadFile(file);
+        CategoryEntity newCategory = converttoEntity(categoryRequest);
+        newCategory.setImgurl(fileName); // ✅ Set full URL
+        newCategory = categoryRepo.save(newCategory);
+
+        return convertToResponse(newCategory);
     }
+
 
     @Override
     public List<CategoryResponse> read() {
@@ -44,6 +48,8 @@ public class CategoryServiceimp implements CategoryService {
                 .map(categoryEntity -> convertToResponse(categoryEntity))
                 .collect(Collectors.toList());
     }
+
+
 
     @Override
     public void delete(String categoryId) {
@@ -60,22 +66,26 @@ public class CategoryServiceimp implements CategoryService {
     }
 
     private CategoryResponse convertToResponse(CategoryEntity newCategory) {
-         Integer itemscount=itemRepo.countByCategoryId(newCategory.getId());
+        Integer itemscount = itemRepo.countByCategoryId(newCategory.getId());
 
+        // ✅ Prevent double prefix
+        String imageUrl = newCategory.getImgurl();
+        if (imageUrl != null && !imageUrl.startsWith("http")) {
+            imageUrl = "http://localhost:8080/images/" + imageUrl;
+        }
 
-   return   CategoryResponse.builder()
-             .categoryId(newCategory.getCategoryId())
-             .bgcolor(newCategory.getBgcolor())
-             .des(newCategory.getDes())
-             .name(newCategory.getName())
-             .imgurl(newCategory.getImgurl())
-             .createdAt(newCategory.getCreatedAt())
-             .updatedAt(newCategory.getUpdatedAt())
-             .items(itemscount)
-             .build();
-
-
+        return CategoryResponse.builder()
+                .categoryId(newCategory.getCategoryId())
+                .bgcolor(newCategory.getBgcolor())
+                .des(newCategory.getDes())
+                .name(newCategory.getName())
+                .imgurl(imageUrl)
+                .createdAt(newCategory.getCreatedAt())
+                .updatedAt(newCategory.getUpdatedAt())
+                .items(itemscount)
+                .build();
     }
+
 
     private CategoryEntity converttoEntity(CategoryRequest categoryRequest) {
 

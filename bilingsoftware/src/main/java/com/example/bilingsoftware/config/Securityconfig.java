@@ -1,10 +1,7 @@
 package com.example.bilingsoftware.config;
 
 import com.example.bilingsoftware.Filter.JwtRequestFilter;
-import com.example.bilingsoftware.Service.UserDetailService;
-import com.example.bilingsoftware.Service.imp.AppUserDetailService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,7 +29,7 @@ import java.util.List;
 public class Securityconfig {
 
 
-    private  final AppUserDetailService userDetailService;
+    private  final UserDetailsService userDetailService;
 
     private final JwtRequestFilter jwtRequestFilter;
 
@@ -43,7 +40,8 @@ public class Securityconfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login","/encode").permitAll()
-                        .requestMatchers("/category", "/items").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/images/**").permitAll()
+                        .requestMatchers("/category", "/items","/order","/payment","/dashboard").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

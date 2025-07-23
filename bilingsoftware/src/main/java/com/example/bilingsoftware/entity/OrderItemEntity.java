@@ -1,5 +1,4 @@
 package com.example.bilingsoftware.entity;
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,33 +11,27 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "tbl_item")
-public class ItemEntity {
-
+@Table(name = "tbl_order")
+public class OrderItemEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private  Long id;
-    @Column(unique = true)
     private  String itemId;
-    private BigDecimal price;
-    private String description;
-    private String  name;
-    private String imgurl;
+    private  String name;
+    private  Double price;
+    private  Integer q;
 
+    @PrePersist
+    protected void onCreate() {
+        this.itemId = "ORD-" + java.util.UUID.randomUUID().toString();
 
-    @CreationTimestamp
-    @Column(updatable = false)
-    private Timestamp createdAt;
-    @UpdateTimestamp
-    private Timestamp updatedAt;
+    }
 
-    @ManyToOne
-    @JoinColumn(name="category_id",nullable=false)
-    private CategoryEntity category;
 }
